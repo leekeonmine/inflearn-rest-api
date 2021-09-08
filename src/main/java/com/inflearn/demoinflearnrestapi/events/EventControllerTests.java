@@ -1,6 +1,7 @@
 package com.inflearn.demoinflearnrestapi.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.inflearn.demoinflearnrestapi.events.common.TestDescription;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -34,6 +35,7 @@ public class EventControllerTests {
 
 
     @Test
+    @TestDescription("정상적으로 동작하는 코드")
     public void createEvent() throws Exception {
 
         EventDto event = EventDto.builder()
@@ -60,6 +62,7 @@ public class EventControllerTests {
 
 
     @Test
+    @TestDescription("BadRequest 코드 ")
     public void createEvent_BadRequest() throws Exception {
 
         Event event = Event.builder()
@@ -86,6 +89,7 @@ public class EventControllerTests {
     }
 
     @Test
+    @TestDescription("입력값이 비어있는 코드")
     public void createEvent_Bad_Request_Empty_input() throws Exception {
         EventDto eventDto = EventDto.builder().build();
 
@@ -96,6 +100,7 @@ public class EventControllerTests {
     }
 
     @Test
+    @TestDescription("이상한 값이 들어가는 코드")
     public void createEvent_Bad_Request_Wrong_input() throws Exception {
         EventDto eventDto = EventDto.builder()
                 .name("Spring")
