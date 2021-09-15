@@ -1,12 +1,18 @@
 package com.inflearn.demoinflearnrestapi.events;
 
+import com.inflearn.demoinflearnrestapi.events.common.ErrorsResource;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,4 +57,18 @@ public class EventController {
         return ResponseEntity.created(createdUri).body(eventResource);
     }
 
+    @GetMapping
+    public ResponseEntity queryEvents(Pageable pageable,
+                                      PagedResourcesAssembler<Event> assembler) {
+        Page<Event> page = this.eventRepository.findAll(pageable);
+        var pageResources = assembler.toResource(page, e-> new EventResource(e));
+        pageResources.add(new Link("/docs/index.html#resources-events-list").withRel("profile"));
+        return ResponseEntity.ok(pageResources);
+    }
+
+
+
+    private ResponseEntity badRequest(Event event) {
+        return ResponseEntity.badRequest().body(new ErrorsResource(event));
+    }
 }
