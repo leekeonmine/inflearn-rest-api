@@ -1,5 +1,6 @@
 package com.inflearn.demoinflearnrestapi.index;
 
+import com.inflearn.demoinflearnrestapi.common.BaseControllerTest;
 import com.inflearn.demoinflearnrestapi.common.RestDocsConfiguration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,15 +17,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs
-@Import(RestDocsConfiguration.class)
-@ActiveProfiles("test")
-public class IndexControllerTest {
-    @Autowired
-    MockMvc mockMvc;
+
+public class IndexControllerTest extends BaseControllerTest {
 
     @Test
     public void index() throws Exception {

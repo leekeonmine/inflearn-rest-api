@@ -1,6 +1,7 @@
 package com.inflearn.demoinflearnrestapi.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.inflearn.demoinflearnrestapi.common.BaseControllerTest;
 import com.inflearn.demoinflearnrestapi.common.RestDocsConfiguration;
 import com.inflearn.demoinflearnrestapi.events.common.TestDescription;
 import org.junit.Test;
@@ -37,25 +38,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs
-@Import(RestDocsConfiguration.class)
-@ActiveProfiles("test")
-public class EventControllerTests {
 
-    @Autowired
-    MockMvc mockMvc;
+public class EventControllerTests extends BaseControllerTest {
 
-    @Autowired
-    ObjectMapper objectMapper;
+
 
     @Autowired
     EventRepository eventRepository;
-
-    @Autowired
-    ModelMapper modelMapper;
 
     @Test
     @TestDescription("정상적으로 동작하는 코드")
