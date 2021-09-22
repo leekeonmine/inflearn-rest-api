@@ -1,8 +1,10 @@
 package com.inflearn.demoinflearnrestapi.configs;
 
 import com.inflearn.demoinflearnrestapi.accounts.Account;
+import com.inflearn.demoinflearnrestapi.accounts.AccountRepository;
 import com.inflearn.demoinflearnrestapi.accounts.AccountRole;
 import com.inflearn.demoinflearnrestapi.accounts.AccountService;
+import com.inflearn.demoinflearnrestapi.events.common.AppProperties;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
@@ -31,15 +33,28 @@ public class AppConfig {
         return new ApplicationRunner() {
             @Autowired
             AccountService accountService;
+
+            @Autowired
+            AppProperties appProperties;
+            @Autowired
+            AccountRepository accountRepository;
             @Override
             public void run(ApplicationArguments args) throws Exception {
-                Account keesun = Account.builder()
-                        .email("keesun@email.com")
-                        .password("keesun")
+                Account admin = Account.builder()
+                        .email(appProperties.getAdminUsername())
+                        .password(appProperties.getAdminPassword())
                         .roles(Set.of(AccountRole.ADMIN,AccountRole.USER))
                         .build()
                         ;
-                accountService.saveAccount(keesun);
+                accountService.saveAccount(admin);
+
+                Account user = Account.builder()
+                        .email(appProperties.getUserUsername())
+                        .password(appProperties.getUserPassword())
+                        .roles(Set.of(AccountRole.USER))
+                        .build()
+                        ;
+                accountService.saveAccount(user);
             }
         };
     }

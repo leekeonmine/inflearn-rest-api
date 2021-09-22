@@ -1,9 +1,15 @@
 package com.inflearn.demoinflearnrestapi.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.inflearn.demoinflearnrestapi.accounts.Account;
+import com.inflearn.demoinflearnrestapi.accounts.AccountRepository;
+import com.inflearn.demoinflearnrestapi.accounts.AccountRole;
+import com.inflearn.demoinflearnrestapi.accounts.AccountService;
 import com.inflearn.demoinflearnrestapi.common.BaseControllerTest;
 import com.inflearn.demoinflearnrestapi.common.RestDocsConfiguration;
+import com.inflearn.demoinflearnrestapi.events.common.AppProperties;
 import com.inflearn.demoinflearnrestapi.events.common.TestDescription;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -18,12 +24,17 @@ import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
+import org.springframework.security.oauth2.common.util.Jackson2JsonParser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.ui.ModelMap;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.stream.IntStream;
 //import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.headers.HeaderDocumentation.*;
@@ -32,6 +43,7 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -46,6 +58,19 @@ public class EventControllerTests extends BaseControllerTest {
     @Autowired
     EventRepository eventRepository;
 
+    @Autowired
+    AccountService accountService;
+
+    @Autowired
+    AccountRepository accountRepository;
+
+    @Autowired
+    AppProperties appProperties;
+    @Before
+    public void setUp(){
+        this.eventRepository.deleteAll();
+        this.accountRepository.deleteAll();
+    }
     @Test
     @TestDescription("정상적으로 동작하는 코드")
     public void createEvent() throws Exception {
@@ -64,6 +89,7 @@ public class EventControllerTests extends BaseControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/events/")
+                        .header(HttpHeaders.AUTHORIZATION, getBearerString())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(MediaTypes.HAL_JSON)
                         .content(objectMapper.writeValueAsString(event))
@@ -129,6 +155,35 @@ public class EventControllerTests extends BaseControllerTest {
                                 )
                         ));
 
+    }
+
+    private String getBearerString() throws Exception {
+        return "Bearer "+getAccessToken();
+    }
+
+    private String getAccessToken() throws Exception {
+
+
+
+
+        Account keesun = Account.builder()
+                .email(appProperties.getUserUsername())
+                .password(appProperties.getUserPassword())
+                .roles(Set.of(AccountRole.ADMIN,AccountRole.USER))
+                .build();
+
+        this.accountService.saveAccount(keesun);
+        ResultActions perform = this.mockMvc.perform(RestDocumentationRequestBuilders.post("/oauth/token")
+                        .with(httpBasic(appProperties.getClientId(),appProperties.getClientSecret()))
+                        .param("username",appProperties.getUserUsername())
+                        .param("password",appProperties.getUserPassword())
+                        .param("grant_type","password"))
+                ;
+
+        MockHttpServletResponse response =  perform.andReturn().getResponse();
+        var responseBody = response.getContentAsString();
+        Jackson2JsonParser parser = new Jackson2JsonParser();
+        return parser.parseMap(responseBody).get("access_token").toString();
     }
 
 
@@ -280,6 +335,7 @@ public class EventControllerTests extends BaseControllerTest {
 
         //When & Then
         this.mockMvc.perform(put("/api/events/{id}",event.getId())
+                        .header(HttpHeaders.AUTHORIZATION, getBearerString())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(this.objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
@@ -299,6 +355,7 @@ public class EventControllerTests extends BaseControllerTest {
 
         //When & Then
         this.mockMvc.perform(put("/api/events/{id}",event.getId())
+                        .header(HttpHeaders.AUTHORIZATION, getBearerString())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(this.objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
@@ -317,6 +374,7 @@ public class EventControllerTests extends BaseControllerTest {
         eventDto.setMaxPrice(1000);
         //When & Then
         this.mockMvc.perform(put("/api/events/{id}",event.getId())
+                        .header(HttpHeaders.AUTHORIZATION, getBearerString())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(this.objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
@@ -334,6 +392,7 @@ public class EventControllerTests extends BaseControllerTest {
 
         //When & Then
         this.mockMvc.perform(put("/api/events/123123")
+                        .header(HttpHeaders.AUTHORIZATION, getBearerString())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(this.objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
